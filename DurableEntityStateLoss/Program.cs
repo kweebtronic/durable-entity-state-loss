@@ -1,4 +1,3 @@
-using Azure.Core.Serialization;
 using Microsoft.Extensions.Hosting;
 
 new HostBuilder()

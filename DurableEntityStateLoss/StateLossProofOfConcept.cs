@@ -10,7 +10,7 @@ using System.Text;
 
 namespace DurableEntityStateLoss
 {
-    public class StateLossProofOfConcept(ILogger<StateLossProofOfConcept> _log)
+    public class StateLossProofOfConcept(ILogger<StateLossProofOfConcept> activityLog)
     {
         private const int RoundsToPlay = 1000;
         private readonly Random _random = new();
@@ -89,7 +89,7 @@ namespace DurableEntityStateLoss
             }
             catch (Exception e)
             {
-                _log.LogError(e.Message);
+                log.LogError(e.Message);
             }
         }
 
@@ -105,7 +105,7 @@ namespace DurableEntityStateLoss
                 Settings = input.Settings
             };
 
-            _log.LogInformation($"{nameof(PlayARound)} completed - {input.Round} = {JsonConvert.SerializeObject(response)}");
+            activityLog.LogInformation($"{nameof(PlayARound)} completed - {input.Round} = {JsonConvert.SerializeObject(response)}");
             return response;
         }
 
@@ -132,7 +132,7 @@ namespace DurableEntityStateLoss
 
             stringBuilder.AppendLine("\n***************\n");
 
-            _log.LogCritical(stringBuilder.ToString());
+            activityLog.LogCritical(stringBuilder.ToString());
 
             if (IsFunctionsDevelopmentEnvironment())
             {

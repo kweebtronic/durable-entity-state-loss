@@ -7,7 +7,6 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using System.Text;
 using System.Text.Json;
-using System.Text.Json.Serialization;
 
 namespace DurableEntityStateLoss
 {
@@ -31,6 +30,8 @@ namespace DurableEntityStateLoss
 
             for (var i = 0; i < 3; i++)
             {
+                // This is more easily replicable under load. I could increase the task count
+                // but I've found that I get consistent failures with multiple concurrent 'games' 
                 tasks.Add(client.ScheduleNewOrchestrationInstanceAsync(nameof(GameOrchestrator), settings));
             }
 
@@ -51,6 +52,8 @@ namespace DurableEntityStateLoss
                 Settings = settings
             };
 
+            // Illustrating that we access the entity from different 'levels' of orchestration.
+            // Coarse-grained changes at the parent ... *****
             await durableGame.Initialise(context, gameId);
 
             var plays = new List<Play>();
@@ -86,6 +89,7 @@ namespace DurableEntityStateLoss
                     .Select(play => context.CallActivityAsync<ScoreUpdate>(nameof(PlayARound), play))
                     .ToList();
 
+                // ***** ... and fine-grained change tracking at the child
                 await context.WhenAllWithScoreUpdate(durableGame, tasks);
             }
             catch (Exception e)

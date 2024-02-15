@@ -5,8 +5,9 @@ using Microsoft.DurableTask;
 using Microsoft.DurableTask.Client;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Newtonsoft.Json;
 using System.Text;
+using System.Text.Json;
+using System.Text.Json.Serialization;
 
 namespace DurableEntityStateLoss
 {
@@ -105,7 +106,7 @@ namespace DurableEntityStateLoss
                 Settings = input.Settings
             };
 
-            activityLog.LogInformation($"{nameof(PlayARound)} completed - {input.Round} = {JsonConvert.SerializeObject(response)}");
+            activityLog.LogInformation($"{nameof(PlayARound)} completed - {input.Round} = {JsonSerializer.Serialize(response)}");
             return response;
         }
 
@@ -116,6 +117,7 @@ namespace DurableEntityStateLoss
             await context.CallActivityAsync(nameof(PersistState), state);
         }
 
+        // This is in *indication* of what I might do in production... write out to some easily-readable storage outside of functions land
         [Function(nameof(PersistState))]
         public async Task PersistState([ActivityTrigger] DurableGame state)
         {
@@ -136,7 +138,7 @@ namespace DurableEntityStateLoss
 
             if (IsFunctionsDevelopmentEnvironment())
             {
-                await File.WriteAllTextAsync($"{ScoresPath}{state.Identifier}.json", JsonConvert.SerializeObject(state));
+                await File.WriteAllTextAsync($"{ScoresPath}{state.Identifier}.json", JsonSerializer.Serialize(state));
             }
         }
 

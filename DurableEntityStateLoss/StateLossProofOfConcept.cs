@@ -142,7 +142,9 @@ namespace DurableEntityStateLoss
 
             if (IsFunctionsDevelopmentEnvironment())
             {
-                await File.WriteAllTextAsync($"{ScoresPath}{state.Identifier}.json", JsonSerializer.Serialize(state));
+                var now = $"{DateTime.UtcNow:O}".Replace(":", string.Empty).Replace("-", string.Empty);
+                var path = $"{ScoresPath}{state.Name}-{now}-{state.Index}.json";
+                await File.WriteAllTextAsync(path, JsonSerializer.Serialize(state));
             }
         }
 
